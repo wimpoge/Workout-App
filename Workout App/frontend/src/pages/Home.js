@@ -1,35 +1,43 @@
-import { useEffect } from "react"
-import { useWorkoutsContext } from '../hooks/useWorkoutContext'
+import { useEffect } from "react";
+import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
-import WorkoutDetails from '../components/WorkoutDetails'
-import WorkoutForm from "../components/WorkoutForm"
+import WorkoutDetails from "../components/WorkoutDetails";
+import WorkoutForm from "../components/WorkoutForm";
 
 const Home = () => {
-    const {workouts, dispatch} = useWorkoutsContext()
+  const { workouts, dispatch } = useWorkoutsContext();
+  const { user } = useAuthContext();
 
-    useEffect(() => {
-        const fetchWorkout = async () => {
-            const response = await fetch('/api/workouts')
-            const json = await response.json()
-
-            if (response.ok) {
-                dispatch({type: 'SET_WORKOUTS', payload: json})
-            }
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      const response = await fetch("/api/workouts", {
+        headers: {
+            'Authorization': `Bearer ${user.token}`
         }
+      });
+      const json = await response.json();
 
-        fetchWorkout()
-    }, [dispatch])
+      if (response.ok) {
+        dispatch({ type: "SET_WORKOUTS", payload: json });
+      }
+    };
+    if (user) {
+      fetchWorkout();
+    }
+  }, [dispatch, user]);
 
-    return (
-        <div className="home">
-            <div className="workout">
-                {workouts && workouts.map((workout) => (
-                    <WorkoutDetails key={workout._id} workout={workout} />
-                ))}
-            </div>
-            <WorkoutForm />
-        </div>
-    )
-}
+  return (
+    <div className="home">
+      <div className="workout">
+        {workouts &&
+          workouts.map((workout) => (
+            <WorkoutDetails key={workout._id} workout={workout} />
+          ))}
+      </div>
+      <WorkoutForm />
+    </div>
+  );
+};
 
-export default Home
+export default Home;
